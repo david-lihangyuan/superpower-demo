@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superpower - 发现你的财富超能力</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        body { background: #0f172a; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow-x: hidden; }
+        .neon-border { box-shadow: 0 0 15px rgba(147, 51, 234, 0.5); border: 1px solid rgba(147, 51, 234, 0.8); }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
+        .hidden { display: none; }
+        .btn-primary { background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%); transition: transform 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
+        .option-btn { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(148, 163, 184, 0.2); transition: all 0.2s; }
+        .option-btn:active { background: rgba(147, 51, 234, 0.3); border-color: #9333ea; }
+        #radarChart { max-width: 300px; margin: 0 auto; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- 1. 欢迎页 -->
+    <div id="screen-welcome" class="text-center animate__animated animate__fadeIn">
+        <div class="mb-8 relative">
+            <div class="w-32 h-32 bg-purple-600 rounded-full blur-3xl absolute top-0 left-1/2 -translate-x-1/2 opacity-50"></div>
+            <h1 class="text-5xl font-bold tracking-tighter mb-2 italic">SUPERPOWER</h1>
+            <p class="text-purple-400 font-medium">发现你的财富超能力</p>
+        </div>
+        <div class="mb-12">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=superpower&backgroundColor=transparent" class="w-48 mx-auto animate__animated animate__pulse animate__infinite" alt="Hero">
+        </div>
+        <button onclick="nextScreen('welcome', 'age')" class="btn-primary px-12 py-4 rounded-full font-bold text-lg shadow-lg">开始探索 →</button>
+    </div>
+
+    <!-- 2. 年龄选择 -->
+    <div id="screen-age" class="hidden text-center animate__animated animate__fadeIn">
+        <h2 class="text-2xl font-bold mb-8">你几岁了？</h2>
+        <div class="grid grid-cols-3 gap-4 mb-12">
+            <button onclick="setAge(8)" class="option-btn py-4 rounded-xl text-xl font-bold">8</button>
+            <button onclick="setAge(9)" class="option-btn py-4 rounded-xl text-xl font-bold">9</button>
+            <button onclick="setAge(10)" class="option-btn py-4 rounded-xl text-xl font-bold">10</button>
+            <button onclick="setAge(11)" class="option-btn py-4 rounded-xl text-xl font-bold">11</button>
+            <button onclick="setAge(12)" class="option-btn py-4 rounded-xl text-xl font-bold">12</button>
+            <button onclick="setAge(13)" class="option-btn py-4 rounded-xl text-xl font-bold">13</button>
+        </div>
+        <p class="text-slate-400 text-sm">这会帮我们给你最合适的挑战</p>
+    </div>
+
+    <!-- 3. 钩子题 - 冰淇淋 -->
+    <div id="screen-hook" class="hidden w-full max-w-md animate__animated animate__fadeIn">
+        <div id="hook-question">
+            <div class="mb-8 text-center text-6xl">🍦</div>
+            <h2 class="text-2xl font-bold mb-4 text-center">一个冰淇淋 15 块，你觉得贵吗？</h2>
+            <div class="space-y-4">
+                <button onclick="revealHook('😊 不贵')" class="option-btn w-full py-4 rounded-xl text-lg px-6 text-left">😊 不贵</button>
+                <button onclick="revealHook('😕 有点贵')" class="option-btn w-full py-4 rounded-xl text-lg px-6 text-left">😕 有点贵</button>
+                <button onclick="revealHook('🤔 不确定')" class="option-btn w-full py-4 rounded-xl text-lg px-6 text-left">🤔 不确定</button>
+            </div>
+        </div>
+        <div id="hook-answer" class="hidden text-center">
+            <div class="mb-8 text-4xl">🤯</div>
+            <h3 class="text-3xl font-bold mb-6 text-purple-400 animate__animated animate__bounceIn">你知道吗？</h3>
+            <div class="glass p-6 rounded-2xl mb-8 text-left leading-relaxed">
+                这个冰淇淋，从工厂出来的时候只要 <span class="text-yellow-400 font-bold">2 块</span>。<br><br>
+                中间经过了运输、店铺租金、店员工资、品牌广告... 价格才变成了 15 块。<br><br>
+                <span class="text-purple-300">你买的不只是冰淇淋，你还在给一整条链上的人发工资。</span>
+            </div>
+            <button onclick="nextScreen('hook', 'diagnosis')" class="btn-primary w-full py-4 rounded-xl font-bold text-lg">进入财富世界 →</button>
+        </div>
+    </div>
+
+    <!-- 4. 诊断题 -->
+    <div id="screen-diagnosis" class="hidden w-full max-w-md animate__animated animate__fadeIn">
+        <div class="mb-4 flex justify-between items-center px-2">
+            <span class="text-slate-400 text-sm">诊断中...</span>
+            <span id="diag-progress" class="text-purple-400 font-bold text-sm">1/5</span>
+        </div>
+        <div class="w-full bg-slate-800 h-1 rounded-full mb-8 overflow-hidden">
+            <div id="diag-bar" class="bg-purple-500 h-full transition-all duration-300" style="width: 20%"></div>
+        </div>
+        
+        <div id="diag-content">
+            <!-- 问题动态注入 -->
+        </div>
+    </div>
+
+    <!-- 5. 生成中动画 -->
+    <div id="screen-generating" class="hidden text-center animate__animated animate__fadeIn">
+        <div class="mb-12">
+            <div class="w-24 h-24 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
+            <h2 class="text-2xl font-bold mb-4">正在分析你的财富 DNA...</h2>
+            <p class="text-slate-400 animate__animated animate__flash animate__infinite">计算超能力数值...</p>
+        </div>
+    </div>
+
+    <!-- 6. 性格卡结果 -->
+    <div id="screen-result" class="hidden w-full max-w-md animate__animated animate__zoomIn">
+        <div class="neon-border glass p-8 rounded-3xl text-center relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-purple-600 blur-3xl opacity-20"></div>
+            
+            <h2 class="text-xl font-bold text-purple-400 mb-2">✨ 你的财富超能力 ✨</h2>
+            <h1 id="result-title" class="text-4xl font-black mb-6 tracking-tight">守护者型</h1>
+            
+            <div class="mb-8">
+                <canvas id="radarChart"></canvas>
+            </div>
+            
+            <div class="space-y-4 mb-8 text-left">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <span class="text-slate-400">核心能力</span>
+                    <span id="main-power" class="text-green-400 font-bold">🛡️ 防御力</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <span class="text-slate-400">潜在盲区</span>
+                    <span id="main-weakness" class="text-red-400 font-bold">💡 创造力</span>
+                </div>
+            </div>
+            
+            <p id="result-desc" class="italic text-slate-300 leading-relaxed mb-8">
+                "你善于保护自己拥有的东西，但在面对快速变化的机会时，可能会因为过于谨慎而错过。"
+            </p>
+            
+            <button onclick="location.reload()" class="btn-primary w-full py-4 rounded-xl font-bold text-lg shadow-lg">开启第一章挑战 →</button>
+        </div>
+        <p class="text-center mt-6 text-slate-500 text-sm">分享你的超能力卡片到朋友圈</p>
+    </div>
+
+    <script>
+        let userData = {
+            age: 0,
+            scores: { insight: 5, judgment: 5, defense: 5, patience: 5, creativity: 5, collaboration: 5 },
+            currentDiag: 0
+        };
+
+        const questions = [
+            {
+                q: "奶奶给了你 500 块压岁钱，你最可能怎么处理？",
+                icon: "🧧",
+                options: [
+                    { t: "🎮 买想要的东西", s: { creativity: 2, patience: -1 } },
+                    { t: "🏦 存起来", s: { defense: 3, patience: 3 } },
+                    { t: "✂️ 花一点存一点", s: { judgment: 3, patience: 1 } },
+                    { t: "📈 问爸妈怎么变多", s: { insight: 2, creativity: 2 } }
+                ]
+            },
+            {
+                q: "学校流行一种 5 块一包的卡片，你会买吗？",
+                icon: "🃏",
+                options: [
+                    { t: "🎯 买一包试试手气", s: { creativity: 1, defense: -1 } },
+                    { t: "👀 先看看别人抽到啥", s: { insight: 2, judgment: 1 } },
+                    { t: "🧮 5块钱太贵了，不买", s: { defense: 2, patience: 2 } },
+                    { t: "🤔 这种卡成本是多少？", s: { insight: 3, creativity: 2 } }
+                ]
+            },
+            {
+                q: "你要办生日派对，但 300 块预算超了，你会？",
+                icon: "🎂",
+                options: [
+                    { t: "💰 跟爸妈多要一点", s: { collaboration: 1, defense: -1 } },
+                    { t: "❌ 去掉最贵的一项", s: { judgment: 3, patience: 1 } },
+                    { t: "💡 每一项都买便宜点的", s: { creativity: 2, judgment: 2 } },
+                    { t: "🤝 让朋友们各带一点吃的", s: { collaboration: 3, creativity: 2 } }
+                ]
+            },
+            {
+                q: "路边有人免费发玩具，但要填爸妈手机号...",
+                icon: "🎁",
+                options: [
+                    { t: "🚀 拿到玩具再说", s: { creativity: 1, defense: -2 } },
+                    { t: "🙅 不填，天下没免费午餐", s: { defense: 3, insight: 2 } },
+                    { t: "📞 填个假的手机号", s: { creativity: 3, defense: 1 } },
+                    { t: "❓ 问他为什么要手机号", s: { insight: 3, judgment: 2 } }
+                ]
+            },
+            {
+                q: "你攒了很久的钱，突然想买个大玩具...",
+                icon: "🧸",
+                options: [
+                    { t: "🔥 立刻冲去商店买", s: { patience: -2, creativity: 1 } },
+                    { t: "📉 再等一周看看还想要吗", s: { patience: 4, judgment: 2 } },
+                    { t: "🔎 网上找找哪里最便宜", s: { insight: 3, judgment: 2 } },
+                    { t: "💼 看看能不能打工赚回来", s: { creativity: 3, collaboration: 2 } }
+                ]
+            }
+        ];
+
+        function nextScreen(current, next) {
+            document.getElementById('screen-' + current).classList.add('hidden');
+            document.getElementById('screen-' + next).classList.remove('hidden');
+        }
+
+        function setAge(age) {
+            userData.age = age;
+            nextScreen('age', 'hook');
+        }
+
+        function revealHook(choice) {
+            document.getElementById('hook-question').classList.add('animate__animated', 'animate__fadeOut');
+            setTimeout(() => {
+                document.getElementById('hook-question').classList.add('hidden');
+                document.getElementById('hook-answer').classList.remove('hidden');
+                document.getElementById('hook-answer').classList.add('animate__animated', 'animate__fadeInUp');
+            }, 500);
+        }
+
+        function renderQuestion() {
+            const q = questions[userData.currentDiag];
+            const content = document.getElementById('diag-content');
+            
+            document.getElementById('diag-progress').innerText = `${userData.currentDiag + 1}/5`;
+            document.getElementById('diag-bar').style.width = `${(userData.currentDiag + 1) * 20}%`;
+
+            content.innerHTML = `
+                <div class="animate__animated animate__fadeInRight">
+                    <div class="mb-8 text-center text-6xl">${q.icon}</div>
+                    <h2 class="text-xl font-bold mb-8 text-center">${q.q}</h2>
+                    <div class="space-y-4">
+                        ${q.options.map((opt, i) => `
+                            <button onclick="handleDiagChoice(${i})" class="option-btn w-full py-4 rounded-xl text-lg px-6 text-left">
+                                ${opt.t}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 初始化第一个问题
+        renderQuestion();
+
+        function handleDiagChoice(idx) {
+            const scores = questions[userData.currentDiag].options[idx].s;
+            for (let k in scores) {
+                userData.scores[k] += scores[k];
+            }
+
+            userData.currentDiag++;
+            if (userData.currentDiag < 5) {
+                renderQuestion();
+            } else {
+                showGenerating();
+            }
+        }
+
+        function showGenerating() {
+            nextScreen('diagnosis', 'generating');
+            setTimeout(() => {
+                showResult();
+            }, 2500);
+        }
+
+        function showResult() {
+            nextScreen('generating', 'result');
+            
+            // 计算性格卡类型
+            let maxVal = -100;
+            let mainPower = '';
+            for (let k in userData.scores) {
+                if (userData.scores[k] > maxVal) {
+                    maxVal = userData.scores[k];
+                    mainPower = k;
+                }
+            }
+
+            const profiles = {
+                defense: { t: "守护者型", p: "🛡️ 防御力", w: "💡 创造力", d: "\"你善于保护自己拥有的东西，但在面对快速变化的机会时，可能会因为过于谨慎而错过。\"" },
+                insight: { t: "侦探型", p: "🔍 洞察力", w: "🤝 协作力", d: "\"你能一眼看出事物背后的真相，是个天生的逻辑高手，但别忘了有时候合作能走得更远。\"" },
+                judgment: { t: "决策者型", p: "⚖️ 判断力", w: "🌱 耐心值", d: "\"你在复杂的情况下总能做出理性的选择，但要记住，有些伟大的成果需要漫长的等待。\"" },
+                creativity: { t: "创造家型", p: "💡 创造力", w: "🛡️ 防御力", d: "\"你充满了新奇的点子，总能看到别人看不到的赚钱机会，但要小心隐藏的风险。\"" },
+                patience: { t: "耕耘者型", p: "🌱 耐心值", w: "⚖️ 判断力", d: "\"你拥有惊人的耐心，理解复利的威力。虽然起步慢，但时间是你的秘密武器。\"" },
+                collaboration: { t: "连接者型", p: "🤝 协作力", w: "🔍 洞察力", d: "\"你擅长调动资源和与人合作。你懂得整合大家的力量，这是最顶级的商业天赋。\"" }
+            };
+
+            const profile = profiles[mainPower];
+            document.getElementById('result-title').innerText = profile.t;
+            document.getElementById('main-power').innerText = profile.p;
+            document.getElementById('main-weakness').innerText = profile.w;
+            document.getElementById('result-desc').innerText = profile.d;
+
+            // 绘制雷达图
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['洞察', '判断', '防御', '耐心', '创造', '协作'],
+                    datasets: [{
+                        label: '能力数值',
+                        data: [
+                            userData.scores.insight, 
+                            userData.scores.judgment, 
+                            userData.scores.defense, 
+                            userData.scores.patience, 
+                            userData.scores.creativity, 
+                            userData.scores.collaboration
+                        ],
+                        backgroundColor: 'rgba(147, 51, 234, 0.4)',
+                        borderColor: 'rgba(147, 51, 234, 1)',
+                        pointBackgroundColor: 'rgba(147, 51, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: 'rgba(255, 255, 255, 0.7)', font: { size: 12 } },
+                            ticks: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 15
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
